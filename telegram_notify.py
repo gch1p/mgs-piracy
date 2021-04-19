@@ -43,8 +43,8 @@ if __name__ == '__main__':
 
     # if found anything, send to telegram
     if results:
-        text = 'new mos-gorsud findings:\n'.join(results)
+        text = '\n'.join(results)
         r = requests.post('https://api.telegram.org/bot%s/sendMessage' % args.token, data={
             'chat_id': args.chat_id,
-            'text': text
+            'text': 'new mos-gorsud findings:\n' + text
         })
