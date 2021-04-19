@@ -58,5 +58,5 @@ if __name__ == '__main__':
             text = 'new mos-gorsud findings:\n' + text
 
             send(text=text, token=args.token, chat_id=args.chat_id)
-    except Exception as e:
+    except:
         send(text='error: '+traceback.format_exc(), token=args.token, chat_id=args.chat_id)
