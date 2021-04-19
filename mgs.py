@@ -84,17 +84,3 @@ class MGSPiracy:
         os.unlink(tempname)
 
         return text
-
-
-if __name__ == '__main__':
-    argp = ArgumentParser()
-    argp.add_argument('--output', type=str, default='output.csv',
-                      help='CSV output file name')
-    argp.add_argument('--upto-pages', type=int, default=10,
-                      help='Last page to parse')
-    args = argp.parse_args()
-
-    mgs = MGSPiracy(url="https://mos-gorsud.ru/mgs/defend",
-                    to_page=args.upto_pages,
-                    output=args.output)
-    mgs.get_cases()
