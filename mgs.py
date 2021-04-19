@@ -1,6 +1,7 @@
 import requests, textract, re, os, tempfile, random, string
 from argparse import ArgumentParser
 from bs4 import BeautifulSoup
+from typing import List, Dict
 
 headers = {
     'Referer': 'https://mos-gorsud.ru/',
@@ -13,7 +14,7 @@ regex = r"""(?i)\b((?:https?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|net|org|
 def strgen(n: int) -> str:
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(n)).lower()
 
-def get_links(s: str) -> list[str]:
+def get_links(s: str) -> List[str]:
     return list(set(re.findall(regex, s)))
 
 
@@ -24,7 +25,7 @@ class MGSPiracy:
         self.from_page = from_page
         self.to_page = to_page
 
-    def get_cases(self) -> list[dict]:
+    def get_cases(self) -> List[Dict]:
         cases = []
 
         for page in range(self.from_page, self.to_page+1):
