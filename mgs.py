@@ -1,4 +1,4 @@
-import requests, textract, re, os, tempfile, random, string, csv
+import requests, textract, re, os, tempfile, random, string
 from argparse import ArgumentParser
 from bs4 import BeautifulSoup
 
@@ -13,21 +13,24 @@ regex = r"""(?i)\b((?:https?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|net|org|
 def strgen(n: int) -> str:
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(n)).lower()
 
+def get_links(s: str) -> list[str]:
+    return list(set(re.findall(regex, s)))
 
-class MosGorSud:
-    def __init__(self, url: str, upto_pages: int, output: str):
-        self.url = url
-        self.upto_pages = upto_pages
-        self.output = output
 
-    def go(self):
-        f = open(self.output, 'w', newline='')
-        csv_writer = csv.writer(f)
+class MGSPiracy:
+    BASE_URL = "https://mos-gorsud.ru/mgs/defend"
 
-        for page in range(1, self.upto_pages):
+    def __init__(self, from_page: int, to_page: int):
+        self.from_page = from_page
+        self.to_page = to_page
+
+    def get_cases(self) -> list[dict]:
+        cases = []
+
+        for page in range(self.from_page, self.to_page+1):
             print(f'page {page}')
 
-            url = self.url + '?page=' + str(page)
+            url = self.BASE_URL + '?page=' + str(page)
             r = requests.get(url, headers=headers)
 
             soup = BeautifulSoup(r.text, "html.parser")
@@ -39,19 +42,25 @@ class MosGorSud:
                 date = cols[0].get_text().strip()
                 statement_number = cols[1].get_text().strip()
                 applicant = cols[3].get_text().strip()
-                objects = cols[4].get_text().strip()
-                link = self.full_link(cols[5].find('a')['href'])
+                object = cols[4].get_text().strip()
+                link = self.mgs_url(cols[5].find('a')['href'])
 
-                text = mgs.get_document_text(link)
-                links = '\n'.join(mgs.get_links(text))
+                decision_text = self.get_document_text(link)
+                violation_links = '\n'.join(get_links(decision_text))
 
-                # print(f'date={date}, stmt_number={statement_number}, applicant={applicant} objects={objects} link={link}')
+                cases.append(dict(
+                    date=date,
+                    statement_number=statement_number,
+                    applicant=applicant,
+                    object=object,
+                    doc_link=link,
+                    violation_links=violation_links,
+                    decision_text=decision_text
+                ))
 
-                csv_writer.writerow((date, statement_number, applicant, objects, link, links))
+        return cases
 
-        f.close()
-
-    def full_link(self, url: str) -> str:
+    def mgs_url(self, url: str) -> str:
         if not url.startswith('http:') and not url.startswith('https:'):
             if not url.startswith('/'):
                 url = '/' + url
@@ -75,9 +84,6 @@ class MosGorSud:
 
         return text
 
-    def get_links(self, s: str) -> list[str]:
-        return list(set(re.findall(regex, s)))
-
 
 if __name__ == '__main__':
     argp = ArgumentParser()
@@ -87,7 +93,7 @@ if __name__ == '__main__':
                       help='Last page to parse')
     args = argp.parse_args()
 
-    mgs = MosGorSud(url="https://mos-gorsud.ru/mgs/defend",
-                    upto_pages=args.upto_pages,
+    mgs = MGSPiracy(url="https://mos-gorsud.ru/mgs/defend",
+                    to_page=args.upto_pages,
                     output=args.output)
-    mgs.go()
+    mgs.get_cases()
