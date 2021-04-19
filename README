@@ -1,0 +1,15 @@
+REQUIREMENTS
+
+In addition to python dependencides, listed in the requirements.txt file, you need
+the 'antiword' utility.
+
+For Debian-based operating systems:
+# apt install antiword
+
+For macOS:
+$ brew install antiword
+
+
+LICENSE
+
+BSD-2c
