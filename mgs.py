@@ -1,5 +1,4 @@
 import requests, textract, re, os, tempfile, random, string
-from argparse import ArgumentParser
 from bs4 import BeautifulSoup
 from typing import List, Dict
 

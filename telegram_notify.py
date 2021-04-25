@@ -1,16 +1,8 @@
-import requests, traceback
+import traceback
 from mgs import MGSPiracy
 from argparse import ArgumentParser
-from jstate import JState
-
-
-def send(text: str, token: str, chat_id: int):
-    r = requests.post('https://api.telegram.org/bot%s/sendMessage' % token, data={
-        'chat_id': chat_id,
-        'text': text
-    })
-    if r.status_code != 200:
-        print('error: telegram returned code %d' % r.status_code)
+from ch1p import State, telegram_notify
+from html import escape
 
 
 if __name__ == '__main__':
@@ -22,6 +14,7 @@ if __name__ == '__main__':
     parser.add_argument('--from', type=int, default=1, help='First page', dest='_from')
     parser.add_argument('--to', type=int, default=5, help='Last page')
     parser.add_argument('--domains', nargs='+', required=True)
+
     args = parser.parse_args()
 
     try:
@@ -30,7 +23,7 @@ if __name__ == '__main__':
         cases = mgs.get_cases()
 
         # read state
-        jst = JState(args.state_file, default=dict(cases=[]))
+        jst = State(file=args.state_file, default=dict(cases=[]))
         data = jst.read()
 
         # loop through cases
@@ -57,6 +50,6 @@ if __name__ == '__main__':
             text = '\n'.join(results)
             text = 'new mos-gorsud findings:\n' + text
 
-            send(text=text, token=args.token, chat_id=args.chat_id)
+            telegram_notify(text=escape(text), parse_mode='HTML', token=args.token, chat_id=args.chat_id)
     except:
-        send(text='error: '+traceback.format_exc(), token=args.token, chat_id=args.chat_id)
+        telegram_notify(text='error: '+escape(traceback.format_exc()), parse_mode='HTML', token=args.token, chat_id=args.chat_id)
